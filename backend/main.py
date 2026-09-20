@@ -34,10 +34,19 @@ async def log_debug_mode() -> None:
 @app.on_event("startup")
 async def probe_screenshot_preview_on_startup() -> None:
     # Detect (and warm up) headless Chromium so the screenshot_preview tool is
-    # only offered when it can actually run. Logs the outcome.
+    # only offered when it can actually run. Logs the outcome. Bounded by a
+    # timeout so a slow/failing Chromium launch never blocks server startup on
+    # memory-constrained hosts; when the probe times out the tool is disabled.
     from preview_screenshot import probe_screenshot_preview
 
-    await probe_screenshot_preview()
+    import asyncio
+
+    try:
+        await asyncio.wait_for(probe_screenshot_preview(), timeout=15)
+    except asyncio.TimeoutError:
+        print("[screenshot_preview] Startup probe timed out — tool disabled.")
+    except Exception as exc:
+        print(f"[screenshot_preview] Startup probe failed — tool disabled. {exc}")
 
 # Configure CORS settings
 app.add_middleware(
