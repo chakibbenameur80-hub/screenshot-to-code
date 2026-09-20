@@ -1,0 +1,13 @@
+.venv
+venv
+__pycache__
+*.pyc
+.env
+.pytest_cache
+.mypy_cache
+.pyright
+run_logs
+local_assets
+image_generation/eval_sets
+image_generation/eval_results
+evals_data
